@@ -1,0 +1,18 @@
+steps: 1
+agents:
+  - id: "A"
+    model: "phi"
+    personality: "Analytical, calm, values evidence."
+    opinion: 0.7
+    valence: -0.2
+    openness: 0.3
+    trust: 0.6
+    sociability: 0.6
+  - id: "B"
+    model: "phi"
+    personality: "Passionate, expressive, seeks emotional connection."
+    opinion: 0.5
+    valence: -0.6
+    openness: 0.6
+    trust: 0.4
+    sociability: 0.8

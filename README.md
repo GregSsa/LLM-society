@@ -42,7 +42,7 @@ LLM Society is a multi-agent simulation framework designed to explore complex so
 To run the simulation, execute the `env.py` script and provide the path to your configuration file.
 
 ```bash
-python src/env.py settings.yaml
+python src/simulation.py settings.yaml
 ```
 
 You can create multiple YAML files to run different simulation experiments.

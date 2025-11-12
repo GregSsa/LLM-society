@@ -4,11 +4,11 @@ import sys
 import logging
 import datetime
 from agent import Agent
-# from metrics import compute_metrics
-# from viz import plot_opinions_time_series, scatter_opinion_valence
+from environments import get_environment_by_name
 
-class Environment:
+class Simulation:
     def __init__(self, settings_path: str):
+        # Load Settings
         with open(settings_path, 'r') as file:
             settings = yaml.safe_load(file)
 
@@ -18,59 +18,77 @@ class Environment:
         self.steps = settings.get('steps', 3)
         self.output_dir = os.path.join("..", "outputs", self.name)
         
-        # Create output directory and set up logging
+        # Setup Logging
         os.makedirs(self.output_dir, exist_ok=True)
         timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         log_filename = f"simulation_{timestamp}.log"
         log_path = os.path.join(self.output_dir, log_filename)
 
-        # Silence noisy loggers
         logging.getLogger("httpx").setLevel(logging.WARNING)
         logging.getLogger("ollama").setLevel(logging.WARNING)
 
-        # Configure logging to output to both console and file
         logger = logging.getLogger()
         logger.setLevel(logging.INFO)
-        logger.handlers = [] # Clear existing handlers
+        logger.handlers = []
 
-        # Console handler
         stream_handler = logging.StreamHandler(sys.stdout)
         stream_handler.setFormatter(logging.Formatter('%(message)s'))
         logger.addHandler(stream_handler)
 
-        # File handler
         file_handler = logging.FileHandler(log_path, 'w', 'utf-8')
         file_handler.setFormatter(logging.Formatter('%(message)s'))
         logger.addHandler(file_handler)
 
         self.log_path = log_path
-        # Load agents after setting up logging
-        self.load_agents(settings)
+
+        # Load Environment
+        env_path = os.path.join(os.path.dirname(settings_path), 'environments.yaml')
+        with open(env_path, 'r') as file:
+            all_environments = yaml.safe_load(file)
         
-    def load_agents(self, settings):
+        env_config = all_environments.get(self.name)
+        if not env_config:
+            raise ValueError(f"Environment '{self.name}' not found in environments.yaml")
+        
+        self.environment = get_environment_by_name(self.name, env_config)
+
+        # Load Agents
+        self.load_agents(settings, env_config)
+        
+    def load_agents(self, settings, env_config):
         agents_param = settings.get('agents', [])
-        
         agent_ids = [agent['id'] for agent in agents_param]
-        full_context = self.contexte + " Here a list of the existing agents : " + ", ".join(agent_ids) + ". "
+        
+        base_context = self.contexte + f" You are participating in the '{self.name}' mission."
+        env_context = self.environment.get_context()
         
         for agent_param in agents_param:
             
-            full_context_perso = full_context + "You are agent " + agent_param['id'] + ". "
-            logging.info(f"Loading agent: {agent_param['id']}")
+            agent_id = agent_param['id']
+            logging.info(f"Loading agent: {agent_id}")
+            
+            agent_context = " Here a list of the existing agents : " + ", ".join(agent_ids) + ". " + "You are agent " + agent_param['id'] + ". "
+            
+            private_info = ""
+            for info in env_config.get('initial_info', []):
+                if info.get('target_agent_id') == agent_id:
+                    private_info = f"Private Information for you only: {info.get('info')}"
+                    break
+
+            full_context = f"{base_context}\n{env_context}\n{agent_context}\n{private_info}"
             
             state = "opinion: " + str(agent_param.get('opinion', 0.0)) + \
                     ", valence: " + str(agent_param.get('valence', 0.0)) + \
                     ", trust: " + str(agent_param.get('trust', 0.0)) + \
                     ", openness: " + str(agent_param.get('openness', 0.0)) + \
                     ", sociability: " + str(agent_param.get('sociability', 0.0))
-            print("TEST context", full_context_perso)
             
             self.agents.append(Agent(
                 model=agent_param['model'],
-                id=agent_param['id'],
+                id=agent_id,
                 personality=agent_param['personality'],
                 state=state,
-                contexte=full_context_perso,
+                contexte=full_context,
                 ))
     
     def _get_agent_by_id(self, agent_id):
@@ -80,6 +98,7 @@ class Environment:
         return None
     
     def handle_agent_action(self, agent: Agent, action_json: dict):
+        # print("\n\n Action JSON: ", action_json)
         action = action_json.get('action')
         if action == 'message':
             target_id = action_json.get('target_agent_id')
@@ -88,7 +107,6 @@ class Environment:
             
             if target_agent:
                 logging.info(f"Agent {agent.id} -> {target_id}: {message}")
-                # Add message to target agent's history for context in their next turn
                 target_agent.messages.append({'role': 'user', 'content': f"You received a message from {agent.id}: {message}"})
             else:
                 logging.info(f"Agent {agent.id} tried to message non-existent agent {target_id}")
@@ -96,6 +114,10 @@ class Environment:
         elif action == 'think':
             thought = action_json.get('thought')
             logging.info(f"Agent {agent.id} thinks: {thought}")
+
+        elif action == 'interact_env':
+            self.environment.perform_action(agent, action_json)
+
         else:
             logging.info(f"Agent {agent.id} produced an invalid action: {action}")
 
@@ -103,17 +125,19 @@ class Environment:
         try:
             starting_time = datetime.datetime.now()
             logging.info("\n--- Starting Simulation ---")
-                
+            final_step = 0
             for i in range(self.steps):
+                final_step = i
+                if self.environment.is_finished:
+                    logging.info("\n--- Environment signals simulation end ---")
+                    break
+
                 starting_step = datetime.datetime.now()
-                
                 logging.info(f"\n--- Step {i+1}/{self.steps} ---")
                 
-                # keep same order for each step for now
                 for agent in self.agents:
-                    prompt = "What is your next action? (you can 'think' or 'message' another agent)"
+                    prompt = self.environment.get_actions() + " Based on the situation, what is your next action? (think, message, or interact_env)"
                     action_json = agent.generate(prompt)
-
                     self.handle_agent_action(agent, action_json)
                     
                 ending_step = datetime.datetime.now()
@@ -123,22 +147,18 @@ class Environment:
             
             logging.info("\n--- Simulation Finished ---")
             logging.info(f"Simulation duration: {ending_time - starting_time}")
+            
+            logging.info(f"Final Step: {final_step + 1}/{self.steps}")
         
         finally:
-            # Clean up logging
             logging.shutdown()
-            # Print final message to original stdout
-            print(f"Simulation log saved to {self.log_path}")
-
-        # metrics = compute_metrics(self.agents)
-        # plot_opinions_time_series(metrics, outpath=self.output_dir)
-        # scatter_opinion_valence(self.agents, outpath=self.output_dir)
+            # print(f"Simulation log saved to {self.log_path}")
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
         settings_file_path = sys.argv[1]
-        env = Environment(settings_file_path)
-        env.run_simulation()
+        sim = Simulation(settings_file_path)
+        sim.run_simulation()
     else:
-        print("Usage: python env.py path_to_yaml")
+        # print("Usage: python simulation.py path_to_yaml")
         sys.exit(1)

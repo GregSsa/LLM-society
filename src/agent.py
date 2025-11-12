@@ -5,10 +5,11 @@ class Agent:
     def __init__(self,
         model = 'phi',
         id = "",
-        state = "",
-        personality = "You are a helpful assistant.",
+        state = "", # pas utilisé pour l'instant
+        personality = "You are a helpful assistant.", # pas utilisé pour l'instant
         contexte="You are an AI model designed to interact with other agents in a society simulation.",
-        environment = "",
+        environment = None, # pas utilisé pour l'instant
+        nb_actions=1
         ):
         
         self.model = model
@@ -17,13 +18,12 @@ class Agent:
         self.personality = personality
         self.contexte = contexte
         self.environment = environment
+        self.nb_actions = nb_actions
         
+            # Your personality is: {self.personality}.
+            # Your current state is: {self.state}.
+            # Global environment info: {self.environment}.
         system_prompt = f"""{self.contexte}
-            Your ID is "{self.id}".
-            Your personality is: {self.personality}.
-            Your current state is: {self.state}.
-            Global environment info: {self.environment}.
-
             You must communicate with other agents by generating a JSON object.
             The JSON object must have the following structure:
             {{
@@ -36,13 +36,20 @@ class Agent:
             "action": "think",
             "thought": "<Your internal thought if you don't want to speak>"
             }}
-            You can only perform one action.
+            OR
+             {{
+            "action": "interact_env",
+            "env_action": <Action name>, "params": <Parameters for the action>
+            }}
+            You can only perform {self.nb_actions} action(s) per turn.
             """
         
         self.messages = [{'role': 'system', 'content': system_prompt}]
     
     def generate(self, prompt):
         self.messages.append({'role': 'user', 'content': prompt})
+        
+        #print("\n\n\n\nTEST ", self.messages)
         
         response = ollama.chat(
             model=self.model,
@@ -58,5 +65,5 @@ class Agent:
             action_json = json.loads(assistant_response)
             return action_json
         except json.JSONDecodeError:
-            print(f"Agent {self.id} produced invalid JSON: {assistant_response}")
+            # print(f"Agent {self.id} produced invalid JSON: {assistant_response}")
             return {"action": "think", "thought": "I failed to produce valid JSON."}

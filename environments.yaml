@@ -1,0 +1,8 @@
+secret_number_mission:
+  description: "A cooperative mission to find a secret number N between 1 and 100."
+  rules: "The goal is to guess the number N. The score is 100 minus the number of turns. To guess, an agent must perform the action 'guess' with the parameter 'number'. Example: {\"action\": \"interact_env\", \"env_action\": \"guess\", \"params\": {\"number\": 50}}."
+  initial_info:
+    - target_agent_id: "A"
+      info: "The secret number N is even."
+    - target_agent_id: "B"
+      info: "The secret number N is greater than 80."

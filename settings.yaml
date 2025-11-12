@@ -1,18 +1,18 @@
-name: "SocietySim"
-context: "You are an AI model designed to interact with other agents in a society simulation."
-steps: 3
+name: "secret_number_mission"
+context: "You are an AI model in a simulation. Your goal is to collaborate with other agents to solve a common problem."
+steps: 10
 agents:
   - id: "A"
     model: "gemma3"
-    personality: "Analytical, calm, values evidence."
+    personality: "Analytical, logical, and cautious. I focus on facts."
     opinion: 0.7
     valence: -0.2
     openness: 0.3
     trust: 0.6
     sociability: 0.6
   - id: "B"
-    model: "phi"
-    personality: "Passionate, expressive, seeks emotional connection."
+    model: "gemma3"
+    personality: "Creative, intuitive, and willing to take risks. I like to explore possibilities."
     opinion: 0.5
     valence: -0.6
     openness: 0.6

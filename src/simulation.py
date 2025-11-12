@@ -16,7 +16,7 @@ class Simulation:
         self.contexte = settings.get('context', 'Default context.')
         self.agents = []
         self.steps = settings.get('steps', 3)
-        self.output_dir = os.path.join("..", "outputs", self.name)
+        self.output_dir = os.path.join(".", "outputs", self.name)
         
         # Setup Logging
         os.makedirs(self.output_dir, exist_ok=True)
@@ -72,7 +72,7 @@ class Simulation:
             private_info = ""
             for info in env_config.get('initial_info', []):
                 if info.get('target_agent_id') == agent_id:
-                    private_info = f"Private Information for you only: {info.get('info')}"
+                    private_info = f"Private Information for you, you can share it with other agents: {info.get('info')}"
                     break
 
             full_context = f"{base_context}\n{env_context}\n{agent_context}\n{private_info}"

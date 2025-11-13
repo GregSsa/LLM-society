@@ -30,7 +30,7 @@ class SecretNumberEnvironment(BaseEnvironment):
 
     def perform_action(self, agent, action_details):
         # super().perform_action(agent, action_details)
-        logging.info(f"Environment received action from {agent.id}: {action_details}")
+        #logging.info(f"Environment received action from {agent.id}: {action_details}")
         
         env_action = action_details.get('env_action')
         if env_action == 'guess':

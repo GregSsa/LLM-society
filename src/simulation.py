@@ -77,18 +77,18 @@ class Simulation:
 
             full_context = f"{base_context}\n{env_context}\n{agent_context}\n{private_info}"
             
-            state = "opinion: " + str(agent_param.get('opinion', 0.0)) + \
-                    ", valence: " + str(agent_param.get('valence', 0.0)) + \
-                    ", trust: " + str(agent_param.get('trust', 0.0)) + \
-                    ", openness: " + str(agent_param.get('openness', 0.0)) + \
-                    ", sociability: " + str(agent_param.get('sociability', 0.0))
+            states = agent_param.get('states', {})
             
+            states_string = f"Your initial states are: " + ", ".join([f"{key}: {value}" for key, value in states.items()]) + "."
+            
+            # print("\n\n Agent State: ", states_string)
             self.agents.append(Agent(
                 model=agent_param['model'],
                 id=agent_id,
                 personality=agent_param['personality'],
-                state=state,
+                state=states_string,
                 contexte=full_context,
+                nb_actions=env_config.get('nb_actions', 1)
                 ))
     
     def _get_agent_by_id(self, agent_id):
@@ -97,29 +97,36 @@ class Simulation:
                 return agent
         return None
     
-    def handle_agent_action(self, agent: Agent, action_json: dict):
-        # print("\n\n Action JSON: ", action_json)
-        action = action_json.get('action')
-        if action == 'message':
-            target_id = action_json.get('target_agent_id')
-            message = action_json.get('message')
-            target_agent = self._get_agent_by_id(target_id)
-            
-            if target_agent:
-                logging.info(f"Agent {agent.id} -> {target_id}: {message}")
-                target_agent.messages.append({'role': 'user', 'content': f"You received a message from {agent.id}: {message}"})
+    def handle_agent_action(self, agent: Agent, action_list_json: dict):
+        # print("\n\n Action JSON: ", action_list_json)
+
+        for act in action_list_json:
+            if self.environment.is_finished:
+                logging.info("Environment finished; skipping remaining actions")
+                break
+
+            action = act.get('action')
+            if action == 'message':
+                target_id = act.get('target_agent_id')
+                message = act.get('message')
+                target_agent = self._get_agent_by_id(target_id)
+
+                if target_agent:
+                    logging.info(f"Agent {agent.id} -> {target_id}: {message}")
+                    target_agent.messages.append({'role': 'user', 'content': f"You received a message from {agent.id}: {message}"})
+                else:
+                    logging.info(f"Agent {agent.id} tried to message non-existent agent {target_id}")
+
+            elif action == 'think':
+                thought = act.get('thought')
+                logging.info(f"Agent {agent.id} thinks: {thought}")
+
+            elif action == 'interact_env':
+                # Pass the whole action object to the environment handler
+                self.environment.perform_action(agent, act)
+
             else:
-                logging.info(f"Agent {agent.id} tried to message non-existent agent {target_id}")
-
-        elif action == 'think':
-            thought = action_json.get('thought')
-            logging.info(f"Agent {agent.id} thinks: {thought}")
-
-        elif action == 'interact_env':
-            self.environment.perform_action(agent, action_json)
-
-        else:
-            logging.info(f"Agent {agent.id} produced an invalid action: {action}")
+                logging.info(f"Agent {agent.id} produced an invalid action: {action}")
 
     def run_simulation(self):
         try:
@@ -137,8 +144,8 @@ class Simulation:
                 
                 for agent in self.agents:
                     prompt = self.environment.get_actions() + " Based on the situation, what is your next action? (think, message, or interact_env)"
-                    action_json = agent.generate(prompt)
-                    self.handle_agent_action(agent, action_json)
+                    action_list_json = agent.generate(prompt)
+                    self.handle_agent_action(agent, action_list_json)
                     
                 ending_step = datetime.datetime.now()
                 logging.info(f"\nStep duration: {ending_step - starting_step}")
@@ -152,7 +159,7 @@ class Simulation:
         
         finally:
             logging.shutdown()
-            # print(f"Simulation log saved to {self.log_path}")
+            print(f"Simulation log saved to {self.log_path}")
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
@@ -160,5 +167,5 @@ if __name__ == '__main__':
         sim = Simulation(settings_file_path)
         sim.run_simulation()
     else:
-        # print("Usage: python simulation.py path_to_yaml")
+        print("Usage: python simulation.py path_to_yaml")
         sys.exit(1)

@@ -3,20 +3,20 @@ context: "You are an AI model in a simulation. Your goal is to collaborate with 
 steps: 10
 agents:
   - id: "A"
-    model: "gemma3"
+    model: "gpt-oss"
     personality: "Analytical, logical, and cautious. I focus on facts."
-    states:
-      opinion: 0.7
-      valence: -0.2
-      openness: 0.3
-      trust: 0.6
-      sociability: 0.6
+    # states:
+    #   opinion: 0.7
+    #   valence: -0.2
+    #   openness: 0.3
+    #   trust: 0.6
+    #   sociability: 0.6
   - id: "B"
-    model: "gemma3"
+    model: "gpt-oss"
     personality: "Creative, intuitive, and willing to take risks. I like to explore possibilities."
-    states:
-      opinion: 0.5
-      valence: -0.6
-      openness: 0.6
-      trust: 0.4
-      sociability: 0.8
+    # states:
+    #   opinion: 0.5
+    #   valence: -0.6
+    #   openness: 0.6
+    #   trust: 0.4
+    #   sociability: 0.8

@@ -15,16 +15,16 @@ class BaseEnvironment:
         logging.info(f"Environment received action from {agent.id}: {action_details}")
 
     def get_actions(self):
-        return f"Environment Description: {self.description}\nRules: {self.rules}"
+        return f"Environment Action: {self.received_actions}"
     def get_context(self):
-        return f"Environment Description: {self.description}\nRules: {self.rules}"
+        return f"Environment Description: {self.description}\nRules: {self.rules}\n Each agent have access to the action history perform on the environnement."
 
 class SecretNumberEnvironment(BaseEnvironment):
     """Environment for the 'Find the Secret Number' mission."""
     def __init__(self, description, rules):
         super().__init__(description, rules)
         # Choose a random even number greater than 80
-        possible_numbers = [n for n in range(81, 101) if n % 2 == 0]
+        possible_numbers = [n for n in range(81, 100) if n % 2 == 0]
         self.secret_number = random.choice(possible_numbers)
         logging.info(f"Secret number chosen by environment: {self.secret_number}")
 

@@ -79,7 +79,10 @@ class Simulation:
             
             states = agent_param.get('states', {})
             
-            states_string = f"Your initial states are: " + ", ".join([f"{key}: {value}" for key, value in states.items()]) + "."
+            if not states:
+                states_string = ""
+            else:
+                states_string = f"Your initial states are: " + ", ".join([f"{key}: {value}" for key, value in states.items()]) + "."
             
             # print("\n\n Agent State: ", states_string)
             self.agents.append(Agent(

@@ -24,7 +24,7 @@ class Agent:
 
         # Prompt système : demande un objet JSON ou une liste d'objets JSON
         system_prompt = f"""{self.contexte}
-You must communicate with other agents by generating JSON representing one or more actions.
+You must communicate with other agents by generating JSON actions.
 The response MUST be a JSON array of action objects.
 Each action object must have one of the following structures:
 {{
@@ -44,10 +44,11 @@ OR
   "params": {{}}
 }}
 You must use 2 action(s) each turn. 
-Examples with Multiple actions:
+Examples of a Response with 3 actions:
 {{ "generate": [
-  {{"action": "think", "thought": "I will consider options."}},
-  {{"action": "message", "target_agent_id": "agent_2", "message": "Hello"}}
+  <action>,
+  <action>,
+  <action>
 ]}}
 """
         # print(f"\nAgent {self.id} System Prompt: ", system_prompt)

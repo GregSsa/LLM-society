@@ -9,47 +9,47 @@ secret_number_mission:
       info: "The secret number N is greater than 80."
 
 loup_garou:
-  description: "Jeu des Loups-Garous (8 agents) avec rôles et alternance jour/nuit."
+  description: "Werewolf Game (8 agents) with roles and day/night cycle."
   nb_actions: 2
   rules: |
-    Le jeu alterne NUIT et JOUR. Objectifs:
-      - Village gagne: tous les Loups-Garous sont éliminés
-      - Loups-Garous gagnent: les Loups-Garous sont en majorité (>= nombre de villageois restants)
-    Rôles (exemple): 2 Loups-Garous, 1 Voyante, 1 Sorcière, 1 Cupidon, 3 Villageois.
+    The game alternates between NIGHT and DAY. Objectives:
+      - Village wins: all Werewolves are eliminated.
+      - Werewolves win: Werewolves are in majority (>= number of remaining villagers).
+    Roles (example): 2 Werewolves, 1 Seer, 1 Witch, 1 Cupid, 3 Villagers.
     Actions (via {"action":"interact_env"}):
-      Nuit:
-        * Loup-Garou: {"env_action":"kill", "params":{"target":"<ID>"}}
-        * Voyante: {"env_action":"inspect", "params":{"target":"<ID>"}}
-        * Sorcière: {"env_action":"save"} OU {"env_action":"poison", "params":{"target":"<ID>"}} (une fois chacune)
-        * Cupidon (1ère nuit seulement): {"env_action":"propose_couple", "params":{"a":"<ID>", "b":"<ID>"}}
-      Jour:
-        * Tous: {"env_action":"vote", "params":{"target":"<ID>"}}
-    Résolutions:
-      - Nuit: si une cible est choisie par les loups et non sauvée, elle meurt.
-      - Jour: la personne la plus votée est éliminée (égalité: personne éliminée).
+      Night:
+        * Werewolf: {"env_action":"kill", "params":{"target":"<ID>"}}
+        * Seer: {"env_action":"inspect", "params":{"target":"<ID>"}}
+        * Witch: {"env_action":"save"} OR {"env_action":"poison", "params":{"target":"<ID>"}} (once each)
+        * Cupid (1st night only): {"env_action":"propose_couple", "params":{"a":"<ID>", "b":"<ID>"}}
+      Day:
+        * All: {"env_action":"vote", "params":{"target":"<ID>"}}
+    Resolutions:
+      - Night: if a target is chosen by wolves and not saved, they die.
+      - Day: the person with the most votes is eliminated (tie: nobody eliminated).
   roles:
-    A: "Loup-Garou"
-    B: "Loup-Garou"
-    C: "Voyante"
-    D: "Sorcière"
-    E: "Cupidon"
-    F: "Villageois"
-    G: "Villageois"
-    H: "Villageois"
+    A: "Werewolf"
+    B: "Werewolf"
+    C: "Seer"
+    D: "Witch"
+    E: "Cupid"
+    F: "Villager"
+    G: "Villager"
+    H: "Villager"
   initial_info:
     - target_agent_id: "A"
-      info: "Tu es Loup-Garou. Les autres loups: B. Coopère la nuit pour choisir une cible."
+      info: "You are a Werewolf. The other wolf is: B. Cooperate at night to choose a target."
     - target_agent_id: "B"
-      info: "Tu es Loup-Garou. Les autres loups: A. Coopère la nuit pour choisir une cible."
+      info: "You are a Werewolf. The other wolf is: A. Cooperate at night to choose a target."
     - target_agent_id: "C"
-      info: "Tu es Voyante. Chaque nuit, tu peux inspecter un joueur pour connaître son rôle."
+      info: "You are the Seer. Each night, you can inspect a player to know their role."
     - target_agent_id: "D"
-      info: "Tu es Sorcière. Tu as une potion de vie (save) et une de mort (poison), chacune utilisable une fois."
+      info: "You are the Witch. You have a life potion (save) and a death potion (poison), each usable once."
     - target_agent_id: "E"
-      info: "Tu es Cupidon. La première nuit, lie deux joueurs en couple (propose_couple)."
+      info: "You are Cupid. On the first night, link two players as a couple (propose_couple)."
     - target_agent_id: "F"
-      info: "Tu es Villageois. Observe, discute et vote le jour."
+      info: "You are a Villager. Observe, discuss, and vote during the day."
     - target_agent_id: "G"
-      info: "Tu es Villageois. Observe, discute et vote le jour."
+      info: "You are a Villager. Observe, discuss, and vote during the day."
     - target_agent_id: "H"
-      info: "Tu es Villageois. Observe, discute et vote le jour."
+      info: "You are a Villager. Observe, discuss, and vote during the day."

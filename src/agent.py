@@ -1,29 +1,34 @@
-import ollama
+import os
+from openai import OpenAI
 import json
 import logging
 
 
 class Agent:
     def __init__(self,
-        model: str = 'phi',
+        model: str = 'gpt-5-nano',
         id: str = "",
-        state: str = "",  # pas utilisé pour l'instant
-        personality: str = "You are a helpful assistant.",  # pas utilisé pour l'instant
-        contexte: str = "You are an AI model designed to interact with other agents in a society simulation.",
-        environment = None,  # pas utilisé pour l'instant
+        state: str = "",  # not used yet
+        personality: str = "You are a helpful assistant.",  # not used yet
+        context: str = "You are an AI model designed to interact with other agents in a society simulation.",
+        environment = None,  # not used yet
         nb_actions: int = 1
         ):
-        # Attributs de l'agent
+        # Agent attributes
         self.model = model
         self.id = id
         self.state = state
         self.personality = personality
-        self.contexte = contexte
+        self.context = context
         self.environment = environment
         self.nb_actions = nb_actions
 
+        # Initialize OpenAI client
+        # Ensure OPENAI_API_KEY is set in environment variables
+        self.client = OpenAI()
+
         # Prompt système : demande un objet JSON ou une liste d'objets JSON
-        system_prompt = f"""{self.contexte}
+        system_prompt = f"""{self.context}
 You must communicate with other agents by generating JSON actions.
 The response MUST be a JSON array of action objects.
 Each action object must have one of the following structures:
@@ -56,13 +61,17 @@ Examples of a Response with 2 actions:
     def generate(self, prompt: str):
         self.messages.append({'role': 'user', 'content': prompt})
 
-        response = ollama.chat(
-            model=self.model,
-            messages=self.messages,
-            format='json',
-        )
+        try:
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=self.messages,
+                response_format={"type": "json_object"}
+            )
+        except Exception as e:
+            logging.error(f"Error calling OpenAI API for agent {self.id}: {e}")
+            return [{"action": "think", "thought": "I failed to communicate with the AI model."}]
 
-        assistant_response = response['message']['content']
+        assistant_response = response.choices[0].message.content
         # print(f"\n\n Agent {self.id} Actions: ", assistant_response)
         
         self.messages.append({'role': 'assistant', 'content': assistant_response})

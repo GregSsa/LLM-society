@@ -13,7 +13,7 @@ class Simulation:
             settings = yaml.safe_load(file)
 
         self.name = settings.get('name', 'DefaultSim')
-        self.contexte = settings.get('context', 'Default context.')
+        self.context = settings.get('context', 'Default context.')
         self.agents = []
         self.steps = settings.get('steps', 3)
         self.output_dir = os.path.join(".", "outputs", self.name)
@@ -25,7 +25,6 @@ class Simulation:
         log_path = os.path.join(self.output_dir, log_filename)
 
         logging.getLogger("httpx").setLevel(logging.WARNING)
-        logging.getLogger("ollama").setLevel(logging.WARNING)
 
         logger = logging.getLogger()
         logger.setLevel(logging.INFO)
@@ -59,7 +58,7 @@ class Simulation:
         agents_param = settings.get('agents', [])
         agent_ids = [agent['id'] for agent in agents_param]
         
-        base_context = self.contexte + f" You are participating in the '{self.name}' mission."
+        base_context = self.context + f" You are participating in the '{self.name}' task."
         env_context = self.environment.get_context()
         
         for agent_param in agents_param:
@@ -69,7 +68,7 @@ class Simulation:
             
             logging.info(f"Loading agent: {agent_model} as {agent_id}")
             
-            agent_context = " Here a list of the existing agents : " + ", ".join(agent_ids) + ". " + "You are agent " + agent_param['id'] + ". "
+            agent_context = " Here is a list of the existing agents: " + ", ".join(agent_ids) + ". " + "You are agent " + agent_param['id'] + ". "
             
             private_info = ""
             for info in env_config.get('initial_info', []):
@@ -87,12 +86,14 @@ class Simulation:
                 states_string = f"Your initial states are: " + ", ".join([f"{key}: {value}" for key, value in states.items()]) + "."
             
             # print("\n\n Agent State: ", states_string)
+            # logging.info(f"Agent {agent_id} has the following context: {full_context}")
+            
             self.agents.append(Agent(
                 model=agent_model,
                 id=agent_id,
                 personality=agent_param['personality'],
                 state=states_string,
-                contexte=full_context,
+                context=full_context,
                 nb_actions=env_config.get('nb_actions', 1)
                 ))
     

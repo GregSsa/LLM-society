@@ -68,7 +68,7 @@ context: "You are an AI model designed to interact with other agents in a societ
 steps: 3
 agents:
   - id: "A"
-    model: "phi"
+    model: "gpt-5-nano"
     personality: "Analytical, calm, values evidence."
     opinion: 0.7
     valence: -0.2

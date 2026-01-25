@@ -3,7 +3,7 @@ context: "You are an AI model in a simulation. Your goal is to collaborate with 
 steps: 10
 agents:
   - id: "A"
-    model: "gpt-oss"
+    model: "gpt-5-nano"
     personality: "Analytical, logical, and cautious. I focus on facts."
     # states:
     #   opinion: 0.7
@@ -12,7 +12,7 @@ agents:
     #   trust: 0.6
     #   sociability: 0.6
   - id: "B"
-    model: "deepseek-r1"
+    model: "gpt-5-nano"
     personality: "Creative, intuitive, and willing to take risks. I like to explore possibilities."
     # states:
     #   opinion: 0.5

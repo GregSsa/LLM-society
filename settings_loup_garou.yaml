@@ -3,42 +3,42 @@ context: "You are an AI model in a simulation. Collaborate, communicate, and use
 steps: 12
 agents:
   - id: "A"
-    model: "gemma3"
+    model: "gpt-5-nano"
     personality: "Strategic, calm, good at persuasion."
     states:
       confidence: 0.6
   - id: "B"
-    model: "gemma3"
+    model: "gpt-5-nano"
     personality: "Cautious, analytical, skeptical."
     states:
       confidence: 0.5
   - id: "C"
-    model: "gemma3"
+    model: "gpt-5-nano"
     personality: "Curious, methodical, observant."
     states:
       confidence: 0.5
   - id: "D"
-    model: "gemma3"
+    model: "gpt-5-nano"
     personality: "Protective, decisive, moral."
     states:
       confidence: 0.5
   - id: "E"
-    model: "gemma3"
+    model: "gpt-5-nano"
     personality: "Romantic, bold, quick to act."
     states:
       confidence: 0.5
   - id: "F"
-    model: "gemma3"
+    model: "gpt-5-nano"
     personality: "Talkative, social, confident."
     states:
       confidence: 0.5
   - id: "G"
-    model: "gemma3"
+    model: "gpt-5-nano"
     personality: "Quiet, logical, fair."
     states:
       confidence: 0.5
   - id: "H"
-    model: "gemma3"
+    model: "gpt-5-nano"
     personality: "Suspicious, sharp, assertive."
     states:
       confidence: 0.5

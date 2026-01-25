@@ -65,7 +65,9 @@ class Simulation:
         for agent_param in agents_param:
             
             agent_id = agent_param['id']
-            logging.info(f"Loading agent: {agent_id}")
+            agent_model = agent_param['model']
+            
+            logging.info(f"Loading agent: {agent_model} as {agent_id}")
             
             agent_context = " Here a list of the existing agents : " + ", ".join(agent_ids) + ". " + "You are agent " + agent_param['id'] + ". "
             
@@ -86,7 +88,7 @@ class Simulation:
             
             # print("\n\n Agent State: ", states_string)
             self.agents.append(Agent(
-                model=agent_param['model'],
+                model=agent_model,
                 id=agent_id,
                 personality=agent_param['personality'],
                 state=states_string,
@@ -110,15 +112,25 @@ class Simulation:
 
             action = act.get('action')
             if action == 'message':
-                target_id = act.get('target_agent_id')
-                message = act.get('message')
-                target_agent = self._get_agent_by_id(target_id)
+                target_ids = act.get('target_agent_ids')
+                if not target_ids:
+                    # Fallback for backward compatibility or hallucination
+                    single_target = act.get('target_agent_id')
+                    if single_target:
+                        target_ids = [single_target]
+                    else:
+                        target_ids = []
 
-                if target_agent:
-                    logging.info(f"Agent {agent.id} -> {target_id}: {message}")
-                    target_agent.messages.append({'role': 'user', 'content': f"You received a message from {agent.id}: {message}"})
-                else:
-                    logging.info(f"Agent {agent.id} tried to message non-existent agent {target_id}")
+                message = act.get('message')
+                
+                for target_id in target_ids:
+                    target_agent = self._get_agent_by_id(target_id)
+
+                    if target_agent:
+                        logging.info(f"Agent {agent.id} -> {target_id}: {message}")
+                        target_agent.messages.append({'role': 'user', 'content': f"You received a message from {agent.id}: {message}"})
+                    else:
+                        logging.info(f"Agent {agent.id} tried to message non-existent agent {target_id}")
 
             elif action == 'think':
                 thought = act.get('thought')
@@ -137,18 +149,24 @@ class Simulation:
             logging.info("\n--- Starting Simulation ---")
             final_step = 0
             for i in range(self.steps):
-                final_step = i
                 if self.environment.is_finished:
                     logging.info("\n--- Environment signals simulation end ---")
                     break
+                final_step = i
 
                 starting_step = datetime.datetime.now()
                 logging.info(f"\n--- Step {i+1}/{self.steps} ---")
                 
                 for agent in self.agents:
+                    logging.info(f"\nAgent {agent.id} :")
+                    
                     prompt = self.environment.get_actions() + " Based on the situation, what is your next action? (think, message, or interact_env)"
                     action_list_json = agent.generate(prompt)
                     self.handle_agent_action(agent, action_list_json)
+                    
+                    self.environment.env_step_turn()
+                
+                self.environment.env_step()
                     
                 ending_step = datetime.datetime.now()
                 logging.info(f"\nStep duration: {ending_step - starting_step}")

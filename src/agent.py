@@ -29,7 +29,7 @@ The response MUST be a JSON array of action objects.
 Each action object must have one of the following structures:
 {{
   "action": "message",
-  "target_agent_id": "<ID of the agent to send the message to>",
+  "target_agent_ids": ["<ID1>", "<ID2>"],
   "message": "<Your message content>"
 }}
 OR
@@ -43,10 +43,9 @@ OR
   "env_action": "<Action name>",
   "params": {{}}
 }}
-You must use 2 action(s) each turn. 
-Examples of a Response with 3 actions:
+You must use a maximum of {self.nb_actions} action(s) per turn. 
+Examples of a Response with 2 actions:
 {{ "generate": [
-  <action>,
   <action>,
   <action>
 ]}}

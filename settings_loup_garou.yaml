@@ -1,0 +1,44 @@
+name: "loup_garou"
+context: "You are an AI model in a simulation. Collaborate, communicate, and use the environment actions appropriately for the Werewolf game."
+steps: 12
+agents:
+  - id: "A"
+    model: "gemma3"
+    personality: "Strategic, calm, good at persuasion."
+    states:
+      confidence: 0.6
+  - id: "B"
+    model: "gemma3"
+    personality: "Cautious, analytical, skeptical."
+    states:
+      confidence: 0.5
+  - id: "C"
+    model: "gemma3"
+    personality: "Curious, methodical, observant."
+    states:
+      confidence: 0.5
+  - id: "D"
+    model: "gemma3"
+    personality: "Protective, decisive, moral."
+    states:
+      confidence: 0.5
+  - id: "E"
+    model: "gemma3"
+    personality: "Romantic, bold, quick to act."
+    states:
+      confidence: 0.5
+  - id: "F"
+    model: "gemma3"
+    personality: "Talkative, social, confident."
+    states:
+      confidence: 0.5
+  - id: "G"
+    model: "gemma3"
+    personality: "Quiet, logical, fair."
+    states:
+      confidence: 0.5
+  - id: "H"
+    model: "gemma3"
+    personality: "Suspicious, sharp, assertive."
+    states:
+      confidence: 0.5

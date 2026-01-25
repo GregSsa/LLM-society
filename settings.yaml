@@ -12,7 +12,7 @@ agents:
     #   trust: 0.6
     #   sociability: 0.6
   - id: "B"
-    model: "gpt-oss"
+    model: "deepseek-r1"
     personality: "Creative, intuitive, and willing to take risks. I like to explore possibilities."
     # states:
     #   opinion: 0.5

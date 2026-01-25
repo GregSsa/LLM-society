@@ -7,3 +7,49 @@ secret_number_mission:
       info: "The secret number N is even."
     - target_agent_id: "B"
       info: "The secret number N is greater than 80."
+
+loup_garou:
+  description: "Jeu des Loups-Garous (8 agents) avec rôles et alternance jour/nuit."
+  nb_actions: 2
+  rules: |
+    Le jeu alterne NUIT et JOUR. Objectifs:
+      - Village gagne: tous les Loups-Garous sont éliminés
+      - Loups-Garous gagnent: les Loups-Garous sont en majorité (>= nombre de villageois restants)
+    Rôles (exemple): 2 Loups-Garous, 1 Voyante, 1 Sorcière, 1 Cupidon, 3 Villageois.
+    Actions (via {"action":"interact_env"}):
+      Nuit:
+        * Loup-Garou: {"env_action":"kill", "params":{"target":"<ID>"}}
+        * Voyante: {"env_action":"inspect", "params":{"target":"<ID>"}}
+        * Sorcière: {"env_action":"save"} OU {"env_action":"poison", "params":{"target":"<ID>"}} (une fois chacune)
+        * Cupidon (1ère nuit seulement): {"env_action":"propose_couple", "params":{"a":"<ID>", "b":"<ID>"}}
+      Jour:
+        * Tous: {"env_action":"vote", "params":{"target":"<ID>"}}
+    Résolutions:
+      - Nuit: si une cible est choisie par les loups et non sauvée, elle meurt.
+      - Jour: la personne la plus votée est éliminée (égalité: personne éliminée).
+  roles:
+    A: "Loup-Garou"
+    B: "Loup-Garou"
+    C: "Voyante"
+    D: "Sorcière"
+    E: "Cupidon"
+    F: "Villageois"
+    G: "Villageois"
+    H: "Villageois"
+  initial_info:
+    - target_agent_id: "A"
+      info: "Tu es Loup-Garou. Les autres loups: B. Coopère la nuit pour choisir une cible."
+    - target_agent_id: "B"
+      info: "Tu es Loup-Garou. Les autres loups: A. Coopère la nuit pour choisir une cible."
+    - target_agent_id: "C"
+      info: "Tu es Voyante. Chaque nuit, tu peux inspecter un joueur pour connaître son rôle."
+    - target_agent_id: "D"
+      info: "Tu es Sorcière. Tu as une potion de vie (save) et une de mort (poison), chacune utilisable une fois."
+    - target_agent_id: "E"
+      info: "Tu es Cupidon. La première nuit, lie deux joueurs en couple (propose_couple)."
+    - target_agent_id: "F"
+      info: "Tu es Villageois. Observe, discute et vote le jour."
+    - target_agent_id: "G"
+      info: "Tu es Villageois. Observe, discute et vote le jour."
+    - target_agent_id: "H"
+      info: "Tu es Villageois. Observe, discute et vote le jour."

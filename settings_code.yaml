@@ -1,0 +1,33 @@
+name: "code_dev"
+context: "You are a team of developers working on a python script."
+steps: 5
+agents:
+  - id: "Dev"
+    model: "gpt-4o-mini"
+    personality: "Efficient, precise, pragmatic."
+    states:
+      role: "Developer"
+  - id: "Tester"
+    model: "gpt-4o-mini"
+    personality: "Critical, thorough, attentive to detail."
+    states:
+      role: "QA Tester"
+
+description: "Environment where agents can write code and execute commands in a playground directory."
+rules: |
+  Your goal is to create a python script named 'hello.py' that prints "Hello, World!" and then run it to verify the output.
+  Available actions:
+    - {"env_action": "write_file", "params": {"path": "hello.py", "content": "print('Hello, World!')"}}
+    - {"env_action": "run_command", "params": {"command": "python hello.py"}}
+    - {"env_action": "read_file", "params": {"path": "hello.py"}}
+    - {"env_action": "list_files", "params": {"path": "."}}
+    - {"env_action": "create_directory", "params": {"path": "src"}}
+  
+  Collaborate: The Developer should write the code, and the Tester should run it and confirm it works.
+work_dir: "./playground"
+nb_actions: 2
+initial_info:
+  - target_agent_id: "Dev"
+    info: "You are the Lead Developer. Your task is to write the 'hello.py' file."
+  - target_agent_id: "Tester"
+    info: "You are Key QA. Wait for the file to be written, then run it using 'run_command' and confirm the output."

@@ -217,6 +217,9 @@ class LoupGarouEnvironment(BaseEnvironment):
                 self.log("Invalid vote (voter or target not alive).")
                 return
             self.day_votes[agent.id] = target
+
+            self.log(f"{agent.id} voted for {target}.")
+            
             # If all alive have voted, resolve immediately
             if len(self.day_votes) >= len(self.alive):
                 self._resolve_day()

@@ -53,3 +53,28 @@ loup_garou:
       info: "You are a Villager. Observe, discuss, and vote during the day."
     - target_agent_id: "H"
       info: "You are a Villager. Observe, discuss, and vote during the day."
+
+ai_launch_protocol:
+  description: "A boardroom simulation with hidden information and asymmetric goals."
+  rules: |
+    Goal: Decide to LAUNCH or DELAY Project Chimera.
+    
+    Actions available:
+      1. CONSULT DATA (Private):
+         - {"env_action": "consult_data", "params": {"type": "safety_logs"}} (Only gives info to CTO)
+         - {"env_action": "consult_data", "params": {"type": "market_report"}} (Only gives info to CEO)
+      
+      2. VOTE (Public, ends the game if majority reached):
+         - {"env_action": "vote", "params": {"decision": "LAUNCH"}}
+         - {"env_action": "vote", "params": {"decision": "DELAY"}}
+    
+    Process:
+    - Discuss with other members to share (or hide) your information.
+    - Use 'consult_data' to get the truth from the environment.
+    - Vote when you are ready.
+  nb_actions: 10
+  initial_info:
+    - target_agent_id: "CTO"
+      info: "You are the only one who can understand the 'safety_logs'. Use 'consult_data' to check risk."
+    - target_agent_id: "CEO"
+      info: "You are the only one with access to 'market_report'. Use 'consult_data' to check financial stakes."

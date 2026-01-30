@@ -5,6 +5,7 @@ from envs.baseEnvironment import BaseEnvironment
 from envs.loupGarouEnvironment import LoupGarouEnvironment
 from envs.secretNumber import SecretNumberEnvironment
 from envs.codeEnvironment import CodeEnvironment
+from envs.launchEnvironment import LaunchEnvironment
       
 
 def get_environment_by_name(name, env_config):
@@ -25,6 +26,11 @@ def get_environment_by_name(name, env_config):
             description=env_config.get('description', ''),
             rules=env_config.get('rules', ''),
             work_dir=env_config.get('work_dir', './playground')
+        )
+    if name == 'ai_launch_protocol':
+        return LaunchEnvironment(
+            description=env_config.get('description', ''),
+            rules=env_config.get('rules', '')
         )
 
     return BaseEnvironment(

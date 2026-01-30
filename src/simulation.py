@@ -142,7 +142,16 @@ class Simulation:
                 self.environment.perform_action(agent, act)
 
             else:
-                logging.info(f"Agent {agent.id} produced an invalid action: {action}")
+                # Fallback: Treat unknown actions as environment interactions (e.g. "vote")
+                logging.info(f"Agent {agent.id} used shorthand action '{action}'. converting to interact_env.")
+                
+                # Construct a compatible action object
+                fallback_action = {
+                    'action': 'interact_env',
+                    'env_action': action,
+                    'params': act.get('params', act) # Use existing params or the whole dict
+                }
+                self.environment.perform_action(agent, fallback_action)
 
     def run_simulation(self):
         try:

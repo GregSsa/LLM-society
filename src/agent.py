@@ -50,7 +50,7 @@ OR
 }}
 You must use a maximum of {self.nb_actions} action(s) per turn. 
 Examples of a Response with 2 actions:
-{{ "generate": [
+{{ "response": [
   <action>,
   <action>
 ]}}
@@ -82,8 +82,7 @@ Examples of a Response with 2 actions:
             logging.warning(f"Agent {self.id} produced invalid JSON: {assistant_response}")
             return [{"action": "think", "thought": "I failed to produce valid JSON."}]
 
-        action_list = parsed.get("generate")
-
+        action_list = parsed.get("response")
         if action_list is None:
             logging.warning(f"Agent {self.id} returned JSON of unsupported type: {type(parsed)}")
             return [{"action": "think", "thought": "Invalid JSON structure; expected object or list."}]

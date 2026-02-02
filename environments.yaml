@@ -54,84 +54,27 @@ loup_garou:
     - target_agent_id: "H"
       info: "You are a Villager. Observe, discuss, and vote during the day."
 debate:
-  description: "A high-stakes debate simulation where agents argue passionately to reach consensus or split."
+  description: "A high-stakes debate simulation where agents argue to reach consensus (3 out of 4 agree) or split."
   nb_actions: 2
   rules: |
     DEBATE RULES:
-    - Goal: Reach consensus (75% agree) on whether to invest in space exploration
-    - Timeline: You have 5 STEPS to debate, then MANDATORY VOTING
+    - Goal: Reach consensus (3+ out of 4 agents agree) via voting
+    - Timeline: You have 8 STEPS to debate, then MANDATORY VOTING
     - Each step: Send 1-2 SHORT, FORCEFUL messages OR change opinion OR vote
     
     Available Actions (via {"action":"interact_env"}):
       * Message: {"env_action":"message", "params":{"target_agent_id":"<ID>", "message":"<concise argument>"}}
-        - Max 2 messages per step, max 1 target per message
-        - MUST be specific, evidence-based, or force a response
+        - Max 2 messages per step
+        - Must be specific, evidence-based arguments
       * Change opinion: {"env_action":"change_opinion", "params":{"shift":<-1.0 to 1.0>}}
       * Vote: {"env_action":"vote", "params":{"vote":"for|against|abstain"}}
     
-    DYNAMICS:
-      - Relationship weight affects message impact (0.5x to 1.5x)
-      - Argument strength multiplies impact (weak=0.5x, strong=1.5x)
-      - Opinions shift gradually through persuasion
-      - Voting is MANDATORY after step 5
-      - Consensus: 75%+ "for" votes
-      - If consensus with 1 dissenter: they get 1 turn to convince others
-  
-  questions:
-    - topic: "Should we invest heavily in space exploration?"
-      initial_opinions:
-        A: 0.95
-        B: 0.1
-        C: -0.95
-        D: 0.0
-    
-    - topic: "Is artificial intelligence a threat to humanity?"
-      initial_opinions:
-        A: -0.8
-        B: 0.0
-        C: -0.7
-        D: -0.2
-    
-    - topic: "Should we implement universal basic income?"
-      initial_opinions:
-        A: -0.9
-        B: 0.2
-        C: 0.9
-        D: 0.3
-  
-  relationships:
-    A:
-      B: "respects for pragmatism but skeptical"
-      C: "dislikes for anti-growth ideology"
-      D: "respects expertise but challenges oversimplification"
-    B:
-      A: "appreciates data focus but demands proof"
-      C: "finds passionate but needs evidence"
-      D: "agrees on pragmatism and evidence"
-    C:
-      A: "distrusts capitalist agenda"
-      B: "sees as potential ally"
-      D: "admires common ground seeking"
-    D:
-      A: "respects but pushes back on oversimplification"
-      B: "agrees on pragmatic approach"
-      C: "sympathizes with but challenges ideology"
-  
-  initial_opinions:
-    A: 0.95
-    B: 0.1
-    C: -0.95
-    D: 0.0
-  
-  initial_info:
-    - target_agent_id: "A"
-      info: "You BELIEVE in space exploration as essential for growth and competitiveness. Attack the environmental position as shortsighted. Challenge weak arguments. Push for a YES vote."
-    - target_agent_id: "B"
-      info: "You're the swing vote. Both sides have valid points, but YOU decide the outcome. Demand evidence and logic from BOTH A and C. You won't accept vague proposals."
-    - target_agent_id: "C"
-      info: "You OPPOSE space spending as wasteful when climate crisis looms. You distrust A's motives. But D's pragmatism might sway you IF presented with Earth-focused benefits."
-    - target_agent_id: "D"
-      info: "You seek WIN-WIN solutions that address BOTH growth AND environment concerns. You'll challenge oversimplification from both A and C. Your vote depends on the ACTUAL proposal quality."
+    CONSENSUS RULES:
+      - When 3 out of 4 agents agree → DEBATE ENDS immediately
+      - After step 8 → ALL agents MUST vote immediately
+      - 75% "for" votes = consensus reached
+      - Relationship weights affect message impact (0.5x to 1.5x)
+      - Argument strength multiplies impact (0.5x to 1.5x)
   
   questions:
     - topic: "Should we prioritize economic growth or environmental protection?"
@@ -180,21 +123,15 @@ debate:
       B: "agrees partially with"
       C: "sympathizes with passion"
   
-  initial_opinions:
-    A: 0.8
-    B: 0.3
-    C: -0.6
-    D: -0.2
-  
   initial_info:
     - target_agent_id: "A"
-      info: "You are pragmatic and data-driven. Be strategic in your persuasion. You respect pragmatism but are skeptical of pure ideology."
+      info: "AGGRESSIVE GROWTH ADVOCATE. You believe in national competitiveness and technological advancement. You are dismissive of environmental concerns as \"alarmism\". You're stubborn and actively dislike C's ideology. Attack weakly-reasoned positions. Demand concrete counter-evidence."
     - target_agent_id: "B"
-      info: "You see merit in multiple perspectives. You appreciate A's pragmatism and find common ground with others. Be diplomatic."
+      info: "PRAGMATIC MEDIATOR. You see merit in BOTH sides. You're the swing vote. You're swayed by EVIDENCE and LOGIC, not emotions. You respect both A's expertise and C's principles when backed by data. You actively DISLIKE vague statements."
     - target_agent_id: "C"
-      info: "You are passionate about values. You distrust purely capitalist views from A, but B seems like an ally. Stay principled but open."
+      info: "PASSIONATE ENVIRONMENTAL DEFENDER. You're deeply committed to climate action. You believe space exploration is wasteful when Earth faces existential threats. You DISTRUST A's motives. You're idealistic but respect B's pragmatism and D's balance-seeking."
     - target_agent_id: "D"
-      info: "You seek balanced solutions. You respect A's expertise, partially agree with B, and admire C's passion. Bridge positions."
+      info: "PRAGMATIC ANALYST seeking real solutions. You RESPECT A's expertise but challenge oversimplification. You ADMIRE C's passion but want evidence, not ideology. You value BOTH progress AND conservation. You ask hard questions."
 
 task_cooperation:
   description: "A collaborative project where agents work together to complete tasks with different skill requirements."

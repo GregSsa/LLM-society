@@ -34,7 +34,7 @@ def get_environment_by_name(name, env_config):
             rules=env_config.get('rules', ''),
             questions=env_config.get('questions', []),
             relationships=env_config.get('relationships', {}),
-            debate_deadline=env_config.get('debate_deadline', 5)
+            debate_deadline=env_config.get('debate_deadline', 8)
         )
         # Set initial opinions if provided
         if 'initial_opinions' in env_config:

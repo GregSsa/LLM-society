@@ -7,7 +7,7 @@ from .baseEnvironment import BaseEnvironment
 class DebateEnvironment(BaseEnvironment):
     """Environment for debate and consensus building with relationships and opinion tracking."""
     
-    def __init__(self, description, rules, questions: list = None, relationships: dict = None, debate_deadline: int = 5):
+    def __init__(self, description, rules, questions: list = None, relationships: dict = None, debate_deadline: int = 8):
         super().__init__(description, rules)
         self.questions = questions or []
         self.current_question = None
@@ -15,24 +15,20 @@ class DebateEnvironment(BaseEnvironment):
         self.opinions = {}  # agent_id -> opinion_value (-1.0 to 1.0)
         self.opinion_history = {}  # agent_id -> [list of opinion values]
         self.relationships = relationships or {}  # agent_id -> {other_agent_id: relationship_type}
-        self.vote_count = 0
         self.votes = {}  # agent_id -> vote (for/against/abstain)
         self.arguments = []  # list of arguments presented
         self.messages_this_step = {}  # agent_id -> count of messages
-        self.consensus_threshold = 0.75  # 75% agreement needed
         self.is_consensus = False
-        self.final_voting = False
-        self.dissenting_agent = None  # agent who still disagrees
-        self.dissent_turn_used = False
         self.debate_deadline = debate_deadline  # Force voting after N steps
         self.voting_forced = False
-        self.all_agents = []  # Will be populated when agents first act
         
         # Choose a random question if available
+        logging.info("=" * 60)
         if self.questions:
             self._select_random_question()
         
         logging.info(f"DebateEnvironment initialized with {debate_deadline}-step debate deadline")
+        logging.info("=" * 60)
     
     def _select_random_question(self):
         """Select a random question and set initial opinions."""
@@ -71,7 +67,8 @@ class DebateEnvironment(BaseEnvironment):
     
     def perform_action(self, agent, action_details):
         """Process agent actions during debate."""
-        if self.is_consensus and not (self.final_voting and self.dissenting_agent == agent.id):
+        # Stop processing if consensus is already reached
+        if self.is_consensus:
             return
         
         super().perform_action(agent, action_details)
@@ -267,33 +264,26 @@ class DebateEnvironment(BaseEnvironment):
         self._check_consensus()
     
     def _check_consensus(self):
-        """Check if consensus has been reached and handle dissenting agent."""
+        """Check if consensus has been reached (3 out of 4 agents agree)."""
         if len(self.votes) == 0:
             return
         
         for_votes = sum(1 for v in self.votes.values() if v == 'for')
-        total_votes = len(self.votes)
-        agreement_rate = for_votes / total_votes if total_votes > 0 else 0
+        against_votes = sum(1 for v in self.votes.values() if v == 'against')
+        total_agents = 4  # A, B, C, D
         
-        # Check for consensus (75%+)
-        if agreement_rate >= self.consensus_threshold:
-            logging.info(f"CONSENSUS REACHED! {for_votes}/{total_votes} agents voted 'for'")
-            
-            # Check if anyone still disagrees
-            against_voters = [agent_id for agent_id, vote in self.votes.items() if vote == 'against']
-            abstain_voters = [agent_id for agent_id, vote in self.votes.items() if vote == 'abstain']
-            
-            if against_voters and not self.dissent_turn_used:
-                # Give one turn to the dissenting agent
-                self.dissenting_agent = against_voters[0]
-                self.final_voting = True
-                logging.info(f"Consensus reached but {self.dissenting_agent} still opposes. They have one turn to convince others.")
-            else:
-                self.is_consensus = True
-                logging.info("FINAL: Debate ended with consensus")
+        # Check for 3-out-of-4 consensus (either 3+ for OR 3+ against)
+        if for_votes >= 3:
+            logging.info(f"🎯 CONSENSUS REACHED! {for_votes}/{total_agents} agents voted 'for' - DEBATE ENDS")
+            self.is_consensus = True
+            self.is_finished = True
+            return
         
-        elif agreement_rate >= 0.5:
-            logging.info(f"MAJORITY REACHED! {for_votes}/{total_votes} agents voted 'for'")
+        if against_votes >= 3:
+            logging.info(f"🎯 CONSENSUS REACHED! {against_votes}/{total_agents} agents voted 'against' - DEBATE ENDS")
+            self.is_consensus = True
+            self.is_finished = True
+            return
     
     def env_step(self):
         """Advance the environment by one step."""
@@ -359,20 +349,25 @@ class DebateEnvironment(BaseEnvironment):
                     rel_lines.append(f"  {agent_id}: {', '.join([f'{other}({rel})' for other, rel in self.relationships[agent_id].items()])}")
             relationships_str = "\nAgent Relationships:\n" + "\n".join(rel_lines) if rel_lines else ""
         
-        # Add deadline warning
-        deadline_warning = ""
-        steps_left = self.debate_deadline - self.step
-        if steps_left > 0 and not self.voting_forced:
-            deadline_warning = f"\n⏰ DEBATE DEADLINE: {steps_left} step(s) left before MANDATORY VOTING!"
+        # Add deadline warning and voting instructions
+        status_msg = ""
+        if self.is_consensus:
+            status_msg = "✅ CONSENSUS REACHED - Debate ended!"
         elif self.voting_forced:
-            deadline_warning = f"\n🔴 VOTING PHASE ACTIVE: You MUST vote NOW. Use action: {{\"action\": \"interact_env\", \"env_action\": \"vote\", \"params\": {{\"vote\": \"for|against|abstain\"}}}}"
+            status_msg = "🔴 MANDATORY VOTING NOW - You MUST vote: {\"action\": \"interact_env\", \"env_action\": \"vote\", \"params\": {\"vote\": \"for|against|abstain\"}}"
+        else:
+            steps_left = self.debate_deadline - self.step
+            if steps_left > 0:
+                status_msg = f"⏰ Debate continues: {steps_left} step(s) left before mandatory voting"
+            else:
+                status_msg = "⏰ No steps left - voting phase starting"
         
         return f"""
 ╔════════════════════════════════════════════════════════════╗
 ║ DEBATE STATE
 ╚════════════════════════════════════════════════════════════╝
 Topic: {self.topic}
-Status: {"Consensus Reached" if self.is_consensus else ("🔴 VOTING PHASE" if self.voting_forced else "⚔️  DEBATE IN PROGRESS")}{deadline_warning}
+Status: {status_msg}
 
 Current Opinions (-1.0=against, 0.0=neutral, 1.0=for):
 {opinion_summary}

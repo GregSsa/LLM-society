@@ -148,6 +148,11 @@ class Simulation:
         try:
             starting_time = datetime.datetime.now()
             logging.info("\n--- Starting Simulation ---")
+            
+            # Print relationships if environment supports it
+            if hasattr(self.environment, 'print_relationships'):
+                self.environment.print_relationships()
+            
             final_step = 0
             for i in range(self.steps):
                 if self.environment.is_finished:

@@ -53,3 +53,190 @@ loup_garou:
       info: "You are a Villager. Observe, discuss, and vote during the day."
     - target_agent_id: "H"
       info: "You are a Villager. Observe, discuss, and vote during the day."
+debate:
+  description: "A high-stakes debate simulation where agents argue passionately to reach consensus or split."
+  nb_actions: 2
+  rules: |
+    DEBATE RULES:
+    - Goal: Reach consensus (75% agree) on whether to invest in space exploration
+    - Timeline: You have 5 STEPS to debate, then MANDATORY VOTING
+    - Each step: Send 1-2 SHORT, FORCEFUL messages OR change opinion OR vote
+    
+    Available Actions (via {"action":"interact_env"}):
+      * Message: {"env_action":"message", "params":{"target_agent_id":"<ID>", "message":"<concise argument>"}}
+        - Max 2 messages per step, max 1 target per message
+        - MUST be specific, evidence-based, or force a response
+      * Change opinion: {"env_action":"change_opinion", "params":{"shift":<-1.0 to 1.0>}}
+      * Vote: {"env_action":"vote", "params":{"vote":"for|against|abstain"}}
+    
+    DYNAMICS:
+      - Relationship weight affects message impact (0.5x to 1.5x)
+      - Argument strength multiplies impact (weak=0.5x, strong=1.5x)
+      - Opinions shift gradually through persuasion
+      - Voting is MANDATORY after step 5
+      - Consensus: 75%+ "for" votes
+      - If consensus with 1 dissenter: they get 1 turn to convince others
+  
+  questions:
+    - topic: "Should we invest heavily in space exploration?"
+      initial_opinions:
+        A: 0.95
+        B: 0.1
+        C: -0.95
+        D: 0.0
+    
+    - topic: "Is artificial intelligence a threat to humanity?"
+      initial_opinions:
+        A: -0.8
+        B: 0.0
+        C: -0.7
+        D: -0.2
+    
+    - topic: "Should we implement universal basic income?"
+      initial_opinions:
+        A: -0.9
+        B: 0.2
+        C: 0.9
+        D: 0.3
+  
+  relationships:
+    A:
+      B: "respects for pragmatism but skeptical"
+      C: "dislikes for anti-growth ideology"
+      D: "respects expertise but challenges oversimplification"
+    B:
+      A: "appreciates data focus but demands proof"
+      C: "finds passionate but needs evidence"
+      D: "agrees on pragmatism and evidence"
+    C:
+      A: "distrusts capitalist agenda"
+      B: "sees as potential ally"
+      D: "admires common ground seeking"
+    D:
+      A: "respects but pushes back on oversimplification"
+      B: "agrees on pragmatic approach"
+      C: "sympathizes with but challenges ideology"
+  
+  initial_opinions:
+    A: 0.95
+    B: 0.1
+    C: -0.95
+    D: 0.0
+  
+  initial_info:
+    - target_agent_id: "A"
+      info: "You BELIEVE in space exploration as essential for growth and competitiveness. Attack the environmental position as shortsighted. Challenge weak arguments. Push for a YES vote."
+    - target_agent_id: "B"
+      info: "You're the swing vote. Both sides have valid points, but YOU decide the outcome. Demand evidence and logic from BOTH A and C. You won't accept vague proposals."
+    - target_agent_id: "C"
+      info: "You OPPOSE space spending as wasteful when climate crisis looms. You distrust A's motives. But D's pragmatism might sway you IF presented with Earth-focused benefits."
+    - target_agent_id: "D"
+      info: "You seek WIN-WIN solutions that address BOTH growth AND environment concerns. You'll challenge oversimplification from both A and C. Your vote depends on the ACTUAL proposal quality."
+  
+  questions:
+    - topic: "Should we prioritize economic growth or environmental protection?"
+      initial_opinions:
+        A: 0.8
+        B: 0.3
+        C: -0.6
+        D: -0.2
+    
+    - topic: "Is artificial intelligence a threat to humanity?"
+      initial_opinions:
+        A: -0.7
+        B: 0.2
+        C: -0.5
+        D: 0.4
+    
+    - topic: "Should universal basic income be implemented?"
+      initial_opinions:
+        A: -0.6
+        B: 0.5
+        C: 0.8
+        D: 0.1
+    
+    - topic: "Should we invest heavily in space exploration?"
+      initial_opinions:
+        A: 0.7
+        B: -0.3
+        C: -0.8
+        D: 0.2
+  
+  relationships:
+    A:
+      B: "respects but skeptical of"
+      C: "dislikes for idealism"
+      D: "trusts for balance"
+    B:
+      A: "appreciates pragmatism"
+      C: "finds passionate"
+      D: "agrees with often"
+    C:
+      A: "distrusts capitalist views"
+      B: "sees as ally"
+      D: "admires common ground"
+    D:
+      A: "respects expertise"
+      B: "agrees partially with"
+      C: "sympathizes with passion"
+  
+  initial_opinions:
+    A: 0.8
+    B: 0.3
+    C: -0.6
+    D: -0.2
+  
+  initial_info:
+    - target_agent_id: "A"
+      info: "You are pragmatic and data-driven. Be strategic in your persuasion. You respect pragmatism but are skeptical of pure ideology."
+    - target_agent_id: "B"
+      info: "You see merit in multiple perspectives. You appreciate A's pragmatism and find common ground with others. Be diplomatic."
+    - target_agent_id: "C"
+      info: "You are passionate about values. You distrust purely capitalist views from A, but B seems like an ally. Stay principled but open."
+    - target_agent_id: "D"
+      info: "You seek balanced solutions. You respect A's expertise, partially agree with B, and admire C's passion. Bridge positions."
+
+task_cooperation:
+  description: "A collaborative project where agents work together to complete tasks with different skill requirements."
+  nb_actions: 3
+  rules: |
+    Goal: Complete all project tasks before time runs out (10 steps).
+    Each task requires a certain effort level to be completed.
+    
+    Available Actions (via {"action":"interact_env"}):
+      * Assign to task: {"env_action":"assign_to_task", "params":{"task_id":"<ID>"}}
+      * Contribute: {"env_action":"contribute", "params":{"task_id":"<ID>", "effort":<points>, "skill_bonus":<1.0-2.0>}}
+      * Request help: {"env_action":"request_help", "params":{"task_id":"<ID>", "skill_type":"<type>"}}
+      * Complete task: {"env_action":"complete_task", "params":{"task_id":"<ID>"}}
+    
+    Mechanics:
+      - Effort points accumulate towards task completion
+      - Skill bonus multiplies effort (e.g., 10 effort * 1.5 bonus = 15 points)
+      - Multiple agents can work on the same task
+      - Tasks must be completed before deadline
+  tasks:
+    - id: "design"
+      name: "System Design"
+      required_effort: 100
+      required_skill: "architect"
+    - id: "backend"
+      name: "Backend Development"
+      required_effort: 150
+      required_skill: "backend"
+    - id: "frontend"
+      name: "Frontend Development"
+      required_effort: 120
+      required_skill: "frontend"
+    - id: "testing"
+      name: "Testing & QA"
+      required_effort: 80
+      required_skill: "qa"
+  initial_info:
+    - target_agent_id: "A"
+      info: "You are an Architect. Your skill bonus is 1.5x on design tasks, 1.0x on others. Lead the project design phase."
+    - target_agent_id: "B"
+      info: "You are a Backend Developer. Your skill bonus is 1.5x on backend tasks, 1.0x on others. Focus on infrastructure."
+    - target_agent_id: "C"
+      info: "You are a Frontend Developer. Your skill bonus is 1.5x on frontend tasks, 1.0x on others. Build the UI."
+    - target_agent_id: "D"
+      info: "You are a QA Engineer. Your skill bonus is 1.5x on testing tasks, 1.0x on others. Ensure code quality."
